@@ -37,7 +37,7 @@ gh repo create mindreader-karl --public --source . --remote origin --push
 開啟 GitHub Pages（把 `你的帳號` 換成 GitHub 帳號）：
 
 ```bash
-gh api -X PUT repos/你的帳號/mindreader-karl/pages -f "source[branch]=main" -f "source[path]=/"
+gh api -X POST repos/你的帳號/mindreader-karl/pages -f "source[branch]=main" -f "source[path]=/"
 ```
 
 ### 用 GitHub 網站上傳
