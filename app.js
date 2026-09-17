@@ -5,6 +5,7 @@ const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let record=null,tickTimer=null;
 const byteTools={},trickReady={};
+let returnTo=null;
 const errors={COURSE_REVISION_CONFLICT:'另一個分頁已經更新了進度。請重新載入這一頁再繼續。',
 COURSE_STEP_CONFLICT:'目前步驟已在另一個分頁變更，請重新載入這一頁。',
 COURSE_NOT_STARTED:'找不到這台電腦上的進度，請重新載入這一頁。',
@@ -52,6 +53,8 @@ function renderStudent(){
  if(!record?.state)return startScreen();
  const r=record.state,s=STEPS[r.step],q=r.q[s.id]||{},m=record.metrics,all=problems(r.attemptId),p=all[s.id];
  let html='<div class="top"><div class="toprow"><b>第 '+(s.ch+1)+' 章 · '+CHAPS[s.ch]+'</b><span>第 '+(r.step+1)+'／'+STEPS.length+' 步</span><span class="pc">'+m.progress+'%</span>'+(r.attempt>1?'<span class="badge">重刷第 '+(r.attempt-1)+' 次</span>':'')+'</div><div class="track"><div class="fill" style="width:'+m.progress+'%"></div></div></div><div class="toolbar"><label for="step-select">回顧已到達步驟</label><select id="step-select">'+STEPS.slice(0,r.maxStep+1).map((x,k)=>'<option value="'+k+'" '+(k===r.step?'selected':'')+'>'+(k+1)+' · '+esc(x.h||'五張卡讀心')+'</option>').join('')+'</select></div>';
+ if(returnTo!==null&&(r.step>=returnTo||returnTo>r.maxStep))returnTo=null;
+ if(returnTo!==null)html+='<p class="reviewback"><button type="button" id="review-return" class="btn">看完了，回到第 '+(returnTo+1)+' 步「'+esc(STEPS[returnTo].h||'')+'」繼續作答</button></p>';
  html+='<section class="panel"><h2 tabindex="-1" id="step-heading">'+esc(s.h||'想一個 0 到 31 的數字')+'</h2>'+(timedStep(s)?'<p class="timer">本題用時 <b id="qtime">'+fmt(liveMs(r,s))+'</b>'+(q.ok?'（已完成）':'')+'</p>':'')+(s.art?'<img class="banner" src="./images/'+esc(s.art)+'.webp" alt="" width="1024" height="572">':'');
  if(s.t==='final')html+='<img class="finale-art" src="./images/karl-finale.webp" alt="卡爾舉起帽子，帽子裡飛出金色的齒輪和開關；學生拿著五張卡片恍然大悟">';
  if(s.karl)html+=s.t==='final'?'<p class="karl"><b>卡爾：</b>'+esc(s.karl)+'</p>':'<div class="karlrow"><img class="karl-face" src="./images/karl-portrait.webp" alt="" width="72" height="72"><p class="karl"><b>卡爾：</b>'+esc(s.karl)+'</p></div>';
@@ -64,6 +67,10 @@ function renderStudent(){
  }
  if(s.steps)html+='<ol class="ladder">'+s.steps.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ol>';
  if(s.ask)html+='<p class="ask">'+esc(fill(s.ask,p))+'</p>';
+ if(s.review&&!q.ok){
+  const targets=s.review.map(v=>STEPS.findIndex(x=>x.id===v||x.t===v)).filter(k=>k>=0&&k<r.step);
+  if(targets.length)html+='<div class="reviewlinks">'+targets.map(k=>'<button type="button" class="plain" data-review="'+k+'">回到第 '+(k+1)+' 步「'+esc(STEPS[k].h||'')+'」看看</button>').join('')+'</div>';
+ }
  if(s.t==='text'||s.t==='conv'){
   if(s.t==='conv'){
    const bits=[...p.bits].map(Number),n=bits.length;
@@ -124,6 +131,8 @@ function renderStudent(){
  if($('#tool-copy'))$('#tool-copy').onclick=()=>{$('#answer').value=byteTools[s.id]||'00000000';$('#answer').focus();};
  if($('#yes')){$('#yes').onclick=()=>send('draft',[...(q.answer||[]),true]);$('#no').onclick=()=>send('draft',[...(q.answer||[]),false]);}
  if($('#trick-ready'))$('#trick-ready').onclick=()=>{trickReady[s.id]=true;renderStudent();};
+ document.querySelectorAll('[data-review]').forEach(b=>b.onclick=()=>{returnTo=r.step;send('navigate',null,+b.dataset.review);});
+ if($('#review-return'))$('#review-return').onclick=()=>send('navigate',null,returnTo);
  if($('#confirm-trick'))$('#confirm-trick').onclick=()=>send('submit',q.answer);
  if($('#grid')){
   let bits=[...(q.answer||'0'.repeat(64))],painting=false,mode='1',dirty=false;
