@@ -15,11 +15,25 @@ const actionTypes = new Set(['text','opt','conv','build','trick','pixel','wave']
 // Multiple choice and practice are timed; the trick, observation activities and story pages are not.
 export const timed = s => ['opt','text','conv','build'].includes(s.t);
 const activityTypes = ['trick','pixel','wave'];
+// The second reading round is practice: only the first trick, the drawing and the sound are scored activities.
+const scoredActivity = s => activityTypes.includes(s.t) && !s.practice;
 const concept = STEPS.filter(s => ['text','opt','conv'].includes(s.t));
 const builds = STEPS.filter(s => s.t === 'build');
-if (concept.length !== 18 || builds.length !== 5) throw new Error('COURSE_RUBRIC_MISMATCH');
+if (concept.length !== 18 || builds.length !== 5 || STEPS.filter(scoredActivity).length !== 3) throw new Error('COURSE_RUBRIC_MISMATCH');
+// Layout 2 inserted the second reading round and the why page after the first trick; older saved steps from there on move by 2.
+const LAYOUT = 2;
+const INSERTED_AT = STEPS.findIndex(s => s.id === 'trick2');
+if (INSERTED_AT !== 2 || STEPS[INSERTED_AT + 1].id !== 'why') throw new Error('COURSE_LAYOUT_MISMATCH');
+const migrateLayout = r => {
+    if ((r.layout || 1) < LAYOUT) {
+        if (r.step >= INSERTED_AT) r.step += 2;
+        if (r.maxStep >= INSERTED_AT) r.maxStep += 2;
+        r.layout = LAYOUT;
+    }
+    return r;
+};
 const FIRST_TIMED = STEPS.findIndex(timed);
-const blank = () => ({version:VERSION,attemptId:newId(),attempt:1,step:0,maxStep:0,q:{},completed:false});
+const blank = () => ({version:VERSION,attemptId:newId(),layout:LAYOUT,attempt:1,step:0,maxStep:0,q:{},completed:false});
 const qFor = (r, s) => r.q[s.id] ||= {submissions:0,wrongSubmissions:0,hints:0,ok:false,skipped:false};
 const allowedValue = (s, v, r) => {
     if (['text','conv'].includes(s.t)) return bounded(v, 160);
@@ -56,7 +70,7 @@ const tick = (r, time) => {
 export const courseScore = r => {
     const count = list => list.filter(s => r.q[s.id]?.ok).length;
     const concepts = count(concept), binary = count(builds);
-    const activitiesDone = count(STEPS.filter(s => activityTypes.includes(s.t)));
+    const activitiesDone = count(STEPS.filter(scoredActivity));
     const done = STEPS.filter((s,k) => actionTypes.has(s.t) ? r.q[s.id]?.ok : k < r.maxStep || (r.completed && k === STEPS.length-1)).length;
     const values = Object.values(r.q);
     // A completed item loses 1 point only when every hint for it was opened.
@@ -84,7 +98,7 @@ const load = () => {
     let saved = null;
     try {
         const value = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
-        if (value && Number.isSafeInteger(value.revision) && value.state?.version === VERSION) saved = {...value, persisted: true};
+        if (value && Number.isSafeInteger(value.revision) && value.state?.version === VERSION) saved = {...value, state: migrateLayout(value.state), persisted: true};
     } catch {
         // Unreadable storage behaves like a first visit.
     }

@@ -4,7 +4,7 @@ import * as course from './engine.js';
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let record=null,tickTimer=null;
-const byteTools={};
+const byteTools={},trickReady={};
 const errors={COURSE_REVISION_CONFLICT:'另一個分頁已經更新了進度。請重新載入這一頁再繼續。',
 COURSE_STEP_CONFLICT:'目前步驟已在另一個分頁變更，請重新載入這一頁。',
 COURSE_NOT_STARTED:'找不到這台電腦上的進度，請重新載入這一頁。',
@@ -55,9 +55,13 @@ function renderStudent(){
  html+='<section class="panel"><h2 tabindex="-1" id="step-heading">'+esc(s.h||'想一個 0 到 31 的數字')+'</h2>'+(timedStep(s)?'<p class="timer">本題用時 <b id="qtime">'+fmt(liveMs(r,s))+'</b>'+(q.ok?'（已完成）':'')+'</p>':'')+(s.art?'<img class="banner" src="./images/'+esc(s.art)+'.webp" alt="" width="1024" height="572">':'');
  if(s.t==='final')html+='<img class="finale-art" src="./images/karl-finale.webp" alt="卡爾舉起帽子，帽子裡飛出金色的齒輪和開關；學生拿著五張卡片恍然大悟">';
  if(s.karl)html+=s.t==='final'?'<p class="karl"><b>卡爾：</b>'+esc(s.karl)+'</p>':'<div class="karlrow"><img class="karl-face" src="./images/karl-portrait.webp" alt="" width="72" height="72"><p class="karl"><b>卡爾：</b>'+esc(s.karl)+'</p></div>';
- if(s.t==='story')html+='<p class="meta">準備好就繼續。</p>';
+ if(s.t==='story'&&!s.steps)html+='<p class="meta">準備好就繼續。</p>';
  if(s.t==='cards')html+=cardsHtml();
  if(s.t==='mile')html+='<div class="learned"><h3>你剛剛學會的</h3><ul>'+s.learned.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul></div>'+(s.why?'<p>電腦電路用容易區分的兩種狀態表示 0 與 1，讓資料更容易可靠地保存與處理。</p>':'')+(s.cards?'<h3>對照五張卡</h3><p class="meta">邊看說明邊對照：每張卡的金色數字就是它的位值。</p>'+cardsHtml():'');
+ if(s.recap){
+  const rounds=[['第一次','trick'],['第二次','trick2']].map(([label,id])=>[label,r.q[id]?.answer]).filter(([,a])=>Array.isArray(a)&&a.length===5);
+  if(rounds.length)html+='<div class="recap"><h3>你的回答和卡爾說出的數字</h3>'+rounds.map(([label,a])=>'<p><b>'+label+'</b>：卡爾說出 <b>'+a.reduce((n,x,k)=>n+(x?2**k:0),0)+'</b></p><div class="bits">'+a.map((x,k)=>'<div class="'+(x?'on':'')+'"><small class="cardname">卡片 '+(k+1)+'</small><b>'+(x?'在':'不在')+'</b></div>').join('')+'</div>').join('')+'</div>';
+ }
  if(s.steps)html+='<ol class="ladder">'+s.steps.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ol>';
  if(s.ask)html+='<p class="ask">'+esc(fill(s.ask,p))+'</p>';
  if(s.t==='text'||s.t==='conv'){
@@ -79,7 +83,8 @@ function renderStudent(){
  }
  if(s.t==='trick'){
   const a=q.answer||[];
-  if(a.length<5){html+='<p>心裡的數字在這張卡上嗎？（第 '+(a.length+1)+' 張）</p>'+card(CARDS[a.length])+'<div class="yn"><button id="yes">在上面</button><button id="no">不在上面</button></div>';}
+  if(!a.length&&!trickReady[s.id])html+='<p class="ask">'+(s.practice?'換一個和剛才不一樣的數字。':'卡爾把五張卡攤在桌上。')+'先看看這五張卡，再在心裡想好一個 0 到 31 的數字，不要說出來。</p>'+cardsHtml()+'<button id="trick-ready" class="btn">想好了，一張一張問我</button>';
+  else if(a.length<5){html+='<p>心裡的數字在這張卡上嗎？（第 '+(a.length+1)+' 張）</p>'+card(CARDS[a.length])+'<div class="yn"><button id="yes">在上面</button><button id="no">不在上面</button></div>';}
   else html+='<div class="bigreveal"><p>卡爾猜的是</p><div class="n">'+a.reduce((n,x,k)=>n+(x?2**k:0),0)+'</div></div>'+(!q.ok?'<button id="confirm-trick" class="btn">我看過結果了</button>':'<p class="fb yes">讀心活動完成。</p>');
  }
  if(s.t==='pixel'){
@@ -118,6 +123,7 @@ function renderStudent(){
  });
  if($('#tool-copy'))$('#tool-copy').onclick=()=>{$('#answer').value=byteTools[s.id]||'00000000';$('#answer').focus();};
  if($('#yes')){$('#yes').onclick=()=>send('draft',[...(q.answer||[]),true]);$('#no').onclick=()=>send('draft',[...(q.answer||[]),false]);}
+ if($('#trick-ready'))$('#trick-ready').onclick=()=>{trickReady[s.id]=true;renderStudent();};
  if($('#confirm-trick'))$('#confirm-trick').onclick=()=>send('submit',q.answer);
  if($('#grid')){
   let bits=[...(q.answer||'0'.repeat(64))],painting=false,mode='1',dirty=false;
