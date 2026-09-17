@@ -25,6 +25,8 @@ export function optionOrder(seed,id,count){
 }
 export const hintLimit=s=>s.hints?.length||(["conv","build"].includes(s.t)?2:0);
 
+// Shown after each decimal-to-binary answer; the page fills in the student's own number.
+const BUILD_OK="在電腦裡,十進位的 {value} 會存成二進位 {bits}。寫成算式:({bits})₂ = {parts} = {value}。";
 export const STEPS=[
 {ch:0,t:"story",h:"後台",karl:"「進來吧,把門帶上。\n我不賣票,也不收錢。我只想找一個能看穿我的人。」",go:"坐下"},
 {ch:0,t:"trick"},
@@ -91,11 +93,11 @@ export const STEPS=[
 
 {ch:2,t:"story",h:"反過來",art:"ch2",
  karl:"「上次是我猜你。這次換你出題——我給你一個數字,你決定它要印在哪幾張卡上。\n印錯一張,我下次就猜不中了。還有,每個數字都只有一種印法。」",go:"開始"},
-{ch:2,t:"build",id:"b1",h:"印數字 · 第 1 題"},
-{ch:2,t:"build",id:"b2",h:"印數字 · 第 2 題"},
-{ch:2,t:"build",id:"b3",h:"印數字 · 第 3 題 · 六張卡"},
-{ch:2,t:"build",id:"b4",h:"印數字 · 第 4 題 · 八張卡"},
-{ch:2,t:"build",id:"b5",h:"印數字 · 第 5 題 · 八張卡"},
+{ch:2,t:"build",id:"b1",h:"印數字 · 第 1 題",ok:BUILD_OK},
+{ch:2,t:"build",id:"b2",h:"印數字 · 第 2 題",ok:BUILD_OK},
+{ch:2,t:"build",id:"b3",h:"印數字 · 第 3 題 · 六張卡",ok:BUILD_OK},
+{ch:2,t:"build",id:"b4",h:"印數字 · 第 4 題 · 八張卡",ok:BUILD_OK},
+{ch:2,t:"build",id:"b5",h:"印數字 · 第 5 題 · 八張卡",ok:BUILD_OK},
 {ch:2,t:"mile",h:"兩個方向你都會了",
  karl:"「十進位轉二進位。老派的人用除法,我習慣用減的。兩種都對。」",
  learned:["方法一(減):從最大的位置開始,放得下就印,放不下就跳過,再用剩下的數繼續",

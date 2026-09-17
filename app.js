@@ -36,7 +36,7 @@ function scorePanel(v){
  return '<div class="panel"><h3>我的學習紀錄</h3><p class="grade">'+(v.first?'第一次完成的分數':'暫計已取得')+' '+v.finalScore+'／100</p><p>'+(attempt>1?'本次重刷分數 ':'活動原分 ')+m.score+'／100 · 計時題用時 '+fmt(m.timeMs)+(attempt>1?' · 第 '+attempt+' 次作答':'')+'</p>'+(v.best?'<p>最佳紀錄：'+v.best.score+' 分 · 用時 '+fmt(v.best.timeMs)+'（第 '+v.best.attempt+' 次）</p>':'')+'<p>概念 '+m.concepts+'/18 · 位元組合 '+m.binary+'/5 · 操作活動 '+m.activities+'/3'+(m.hintPenalty?' · 提示扣分 '+m.hintPenalty+' 分':'')+'</p><p>實際完成 '+m.done+'/'+m.totalSteps+' 步（'+m.progress+'%） · 到達第 '+m.reached+' 步 · 跳過 '+m.skipped+' 題</p><details><summary>分數依據與診斷紀錄</summary><p>概念 70 分；五題位元組合 15 分；讀心、點陣、取樣各 5 分。訂正不扣分；同一題的提示全部用完，該題扣 1 分（沒用完不扣）。選擇題與練習題會計時，時間只用來和自己的紀錄比較，不影響分數；離開超過 5 分鐘只算 5 分鐘。</p><p>正式提交 '+m.submissions+' 次 · 錯答後訂正 '+m.corrected+' 題 · 提示 '+m.hints+' 次</p><p>這是可提示與訂正的活動成績，不等同獨立測驗。</p></details><div class="report"><b>依活動證據產生的回饋（規則範本）</b><p>'+esc(f.strength)+'</p><p>'+esc(f.advice)+'</p><p>'+esc(f.comment)+'</p></div></div>';
 }
 const isAction=s=>['text','opt','conv','build','trick','pixel','wave'].includes(s.t);
-const fill=(text,p)=>String(text||'').replace(/\{(letter|code|bits|word)\}/g,(_,k)=>p?.[k]??'');
+const fill=(text,p)=>String(text||'').replace(/\{(letter|code|bits|word|value|parts)\}/g,(_,k)=>k==='parts'?[...(p?.bits||'')].map((b,i,a)=>b==='1'?2**(a.length-1-i):0).filter(Boolean).join(' + '):p?.[k]??'');
 const cardsHtml=(highFirst=false)=>'<div class="cardgrid">'+(highFirst?[...CARDS].reverse():CARDS).map(c=>card(c)).join('')+'</div>';
 const CN=['零','一','二','三','四','五','六','七','八'];
 const glyph=n=>n>=33&&n<=126?String.fromCharCode(n):n===32?'空白':'—';
