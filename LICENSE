@@ -1,0 +1,36 @@
+本專案採用兩種授權 / This project uses two licenses
+
+1. 程式碼：index.html、app.js、engine.js、course.css，以及 content.js 裡的程式結構與函式，
+   以下方的 MIT 授權釋出。
+   Code (index.html, app.js, engine.js, course.css and the program logic in content.js)
+   is released under the MIT License below.
+
+2. 課程內容：故事、題目、選項、提示與說明文字（不論寫在哪個檔案），以及 images/ 內所有插圖與 favicon.ico，
+   以 CC BY-NC-SA 4.0 授權釋出，詳見 LICENSE-CONTENT.md。
+   Course content (story, questions, options, hints and explanations, wherever they appear,
+   plus every illustration in images/ and favicon.ico) is released under CC BY-NC-SA 4.0;
+   see LICENSE-CONTENT.md.
+
+---
+
+MIT License
+
+Copyright (c) 2026 KUSU 酷書
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
