@@ -5,7 +5,7 @@ const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let record=null,tickTimer=null;
 const byteTools={},trickReady={};
-let returnTo=null;
+let returnTo=null,shownStep=null;
 const errors={COURSE_REVISION_CONFLICT:'另一個分頁已經更新了進度。請重新載入這一頁再繼續。',
 COURSE_STEP_CONFLICT:'目前步驟已在另一個分頁變更，請重新載入這一頁。',
 COURSE_NOT_STARTED:'找不到這台電腦上的進度，請重新載入這一頁。',
@@ -23,7 +23,7 @@ function send(kind,value=null,step=record?.state?.step||0){
  }
 }
 function startScreen(){
- clearInterval(tickTimer);
+ clearInterval(tickTimer);shownStep=null;
  $('#app').innerHTML='<div id="cover"><img class="cover-art" src="./images/karl-cover.webp" alt="讀心術師卡爾在後台的聚光燈下拿著五張卡片"><div class="ticket"><p class="eyebrow">今夜 · 特別場</p><h1>讀心術師卡爾</h1><p class="story">後台只剩一盞燈。卡爾握著五張卡片。想一個數字，看看你能不能拆穿他的讀心把戲。</p><button id="start" class="btn">進入後台</button><p class="note">不用登入 · 進度只存在這台電腦的瀏覽器<br>訂正不扣分 · 同一題提示全部用完才扣 1 分</p></div></div>';
  $('#start').onclick=()=>send('start');
 }
@@ -111,6 +111,7 @@ function renderStudent(){
  if(s.t==='final')html+='<p>你用一連串「有或沒有」，認識了數字、文字、圖片與聲音的表示方式。</p><button id="finish" class="btn" '+(r.completed?'disabled':'')+'>'+(r.completed?'已完成本次活動':'完成本次活動')+'</button>'+(r.completed?'<div class="retrybox"><p><b>想挑戰更快嗎？</b>重刷會換新的數字和選項順序，只重做選擇題和練習題並重新計時。第一次完成的分數會保留，另外記下你的最佳紀錄。</p><button id="retry-course" class="btn">重刷練習</button></div>':'');
  html+='<div class="nav"><button id="back" '+(r.step===0?'disabled':'')+'>上一步</button>'+(s.skip&&!q.ok?'<button id="skip">先跳過（不算答對）</button>':'')+(r.step<STEPS.length-1?'<button id="next" class="go" '+(isAction(s)&&!q.ok&&!q.skipped?'disabled':'')+'>'+esc(s.go||'繼續 →')+'</button>':'')+'</div></section>'+scorePanel(record);
  $('#app').innerHTML=html;
+ if(shownStep!==r.step){shownStep=r.step;window.scrollTo(0,0);}
  $('#step-select').onchange=e=>send('navigate',null,+e.target.value);
  $('#back').onclick=()=>send('navigate',null,r.step-1);
  if($('#next'))$('#next').onclick=()=>send('next');
