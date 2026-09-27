@@ -76,6 +76,7 @@ function renderStudent(){
    const bits=[...p.bits].map(Number),n=bits.length;
    if(s.raw)html+='<p>把這排二進位換成十進位（速記寫法：('+p.bits+')₂）：</p>';
    else html+='<p class="ask">換你當讀心師。這位顧客心裡想了一個數字，對'+CN[n]+'張卡一張一張回答「在不在」，答案記成下面這排 1 和 0：<b>1 代表顧客的數字「在」這張卡上</b>，<b>0 代表「不在」</b>。</p><p>每一格下面的小數字，就是那張卡的金色數字（位值）。把寫著 1 的格子的金色數字全部加起來，就是顧客心裡想的數字；寫著 0 的跳過。</p>';
+   if(s.id==='a1')html+='<p class="meta"><b>卡片順序提醒：</b>前面讀心時，卡片由小到大排成 1、2、4、8、16。平常寫數字時，較高的位數在左邊，較低的位數在右邊；所以進入二進位後，我們把順序反過來：卡片 5（16）放最左邊，卡片 1（1）放最右邊。順序雖然改了，規則仍一樣：1（在）就加上該卡片的位值，0（不在）就跳過。</p>';
    html+='<div class="bits">'+bits.map((b,k)=>'<div class="'+(b?'on':'')+'">'+(s.raw?'':'<small class="cardname">卡片 '+(n-k)+'</small>')+'<b>'+b+'</b><small>'+2**(n-1-k)+'</small>'+(s.raw?'':'<em class="inout">'+(b?'在':'不在')+'</em>')+'</div>').join('')+'</div>';
    if(p.n===5)html+='<details class="cardref"><summary>打開五張卡對照（由左到右是卡片 5 到卡片 1，和上面的格子對齊）</summary>'+cardsHtml(true)+'</details>';
   }
