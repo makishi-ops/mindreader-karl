@@ -83,6 +83,7 @@ function renderStudent(){
   if(s.tool)html+=byteTool(s.id)+(s.id==='d2'&&!q.ok?'<button type="button" id="tool-copy" class="plain">把 8 格結果填入答案</button>':'');
   if(s.table)html+=letterTable();
   html+='<form id="answer-form" class="ansrow"><input id="answer" aria-label="你的答案" maxlength="160" '+(s.ph?'placeholder="'+esc(s.ph)+'"':'')+' value="'+esc(q.answer||'')+'" '+(q.ok?'disabled':'')+'><button '+(q.ok?'disabled':'')+'>確認答案</button></form>';
+  html+='<p class="meta">可輸入全形或半形；英文字母大小寫仍依題目判別。</p>';
  }
  if(s.t==='opt')html+='<div class="opts">'+optionOrder(r.attemptId,s.id,s.opts.length).map(k=>'<button data-opt="'+k+'" class="'+(q.answer===k?'sel':'')+'" '+(q.ok?'disabled':'')+'>'+esc(s.opts[k])+'</button>').join('')+'</div><p class="meta">請先看清楚題目再作答：點選選項就會提交，每猜錯一次扣 1 分。每次作答的選項順序不同。</p>';
  if(s.t==='build'){
