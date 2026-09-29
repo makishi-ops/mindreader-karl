@@ -24,7 +24,7 @@ function send(kind,value=null,step=record?.state?.step||0){
 }
 function startScreen(){
  clearInterval(tickTimer);shownStep=null;
- $('#app').innerHTML='<div id="cover"><img class="cover-art" src="./images/karl-cover.webp" alt="讀心術師卡爾在後台的聚光燈下拿著五張卡片"><div class="ticket"><p class="eyebrow">今夜 · 特別場</p><h1>讀心術師卡爾</h1><p class="story">後台只剩一盞燈。卡爾握著五張卡片。想一個數字，看看你能不能拆穿他的讀心把戲。</p><button id="start" class="btn">進入後台</button><p class="note">不用登入 · 進度只存在這台電腦的瀏覽器<br>訂正不扣分 · 同一題提示全部用完才扣 1 分</p></div></div>';
+ $('#app').innerHTML='<div id="cover"><img class="cover-art" src="./images/karl-cover.webp" alt="讀心術師卡爾在後台的聚光燈下拿著五張卡片"><div class="ticket"><p class="eyebrow">今夜 · 特別場</p><h1>讀心術師卡爾</h1><p class="story">後台只剩一盞燈。卡爾握著五張卡片。想一個數字，看看你能不能拆穿他的讀心把戲。</p><button id="start" class="btn">進入後台</button><p class="note">不用登入 · 進度只存在這台電腦的瀏覽器<br>選擇題每猜錯一次扣 1 分 · 其他題目訂正不扣分<br>同一題提示全部用完再扣 1 分</p></div></div>';
  $('#start').onclick=()=>send('start');
 }
 const fmt=ms=>{const t=Math.max(0,Math.round((ms||0)/1000)),h=Math.floor(t/3600),m=Math.floor(t%3600/60),x=t%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0');};
@@ -33,7 +33,7 @@ const liveMs=(r,s)=>{const q=r.q[s.id]||{};return (q.activeMs||0)+(q.ok||!Number
 function scorePanel(v){
  const m=v.metrics,f=v.feedback,attempt=v.state?.attempt||1;
  if(!m)return '';
- return '<div class="panel"><h3>我的學習紀錄</h3><p class="grade">'+(v.first?'第一次完成的分數':'暫計已取得')+' '+v.finalScore+'／100</p><p>'+(attempt>1?'本次重刷分數 ':'活動原分 ')+m.score+'／100 · 計時題用時 '+fmt(m.timeMs)+(attempt>1?' · 第 '+attempt+' 次作答':'')+'</p>'+(v.best?'<p>最佳紀錄：'+v.best.score+' 分 · 用時 '+fmt(v.best.timeMs)+'（第 '+v.best.attempt+' 次）</p>':'')+'<p>概念 '+m.concepts+'/18 · 位元組合 '+m.binary+'/5 · 操作活動 '+m.activities+'/3'+(m.hintPenalty?' · 提示扣分 '+m.hintPenalty+' 分':'')+'</p><p>實際完成 '+m.done+'/'+m.totalSteps+' 步（'+m.progress+'%） · 到達第 '+m.reached+' 步 · 跳過 '+m.skipped+' 題</p><details><summary>分數依據與診斷紀錄</summary><p>概念 70 分；五題位元組合 15 分；讀心、點陣、取樣各 5 分。訂正不扣分；同一題的提示全部用完，該題扣 1 分（沒用完不扣）。選擇題與練習題會計時，時間只用來和自己的紀錄比較，不影響分數；離開超過 5 分鐘只算 5 分鐘。</p><p>正式提交 '+m.submissions+' 次 · 錯答後訂正 '+m.corrected+' 題 · 提示 '+m.hints+' 次</p><p>這是可提示與訂正的活動成績，不等同獨立測驗。</p></details><div class="report"><b>依活動證據產生的回饋（規則範本）</b><p>'+esc(f.strength)+'</p><p>'+esc(f.advice)+'</p><p>'+esc(f.comment)+'</p></div></div>';
+ return '<div class="panel"><h3>我的學習紀錄</h3><p class="grade">'+(v.first?'第一次完成的分數':'暫計已取得')+' '+v.finalScore+'／100</p><p>'+(attempt>1?'本次重刷分數 ':'活動原分 ')+m.score+'／100 · 計時題用時 '+fmt(m.timeMs)+(attempt>1?' · 第 '+attempt+' 次作答':'')+'</p>'+(v.best?'<p>最佳紀錄：'+v.best.score+' 分 · 用時 '+fmt(v.best.timeMs)+'（第 '+v.best.attempt+' 次）</p>':'')+'<p>概念 '+m.concepts+'/18 · 位元組合 '+m.binary+'/5 · 操作活動 '+m.activities+'/3'+(m.choicePenalty?' · 選擇題錯答扣分 '+m.choicePenalty+' 分':'')+(m.hintPenalty?' · 提示扣分 '+m.hintPenalty+' 分':'')+'</p><p>實際完成 '+m.done+'/'+m.totalSteps+' 步（'+m.progress+'%） · 到達第 '+m.reached+' 步 · 跳過 '+m.skipped+' 題</p><details><summary>分數依據與診斷紀錄</summary><p>概念 70 分；五題位元組合 15 分；讀心、點陣、取樣各 5 分。選擇題每猜錯一次扣 1 分；其他題目答錯後仍可訂正，訂正本身不再扣分。同一題的提示全部用完，該題再扣 1 分（沒用完不扣）。選擇題與練習題會計時，時間只用來和自己的紀錄比較，不影響分數；離開超過 5 分鐘只算 5 分鐘。</p><p>正式提交 '+m.submissions+' 次 · 錯答後訂正 '+m.corrected+' 題 · 選擇題錯答 '+m.choicePenalty+' 次 · 提示 '+m.hints+' 次</p><p>這是可提示與訂正的活動成績，不等同獨立測驗。</p></details><div class="report"><b>依活動證據產生的回饋（規則範本）</b><p>'+esc(f.strength)+'</p><p>'+esc(f.advice)+'</p><p>'+esc(f.comment)+'</p></div></div>';
 }
 const isAction=s=>['text','opt','conv','build','trick','pixel','wave'].includes(s.t);
 const fill=(text,p)=>String(text||'').replace(/\{(letter|code|bits|word|value|parts)\}/g,(_,k)=>k==='parts'?[...(p?.bits||'')].map((b,i,a)=>b==='1'?2**(a.length-1-i):0).filter(Boolean).join(' + '):p?.[k]??'');
@@ -84,7 +84,7 @@ function renderStudent(){
   if(s.table)html+=letterTable();
   html+='<form id="answer-form" class="ansrow"><input id="answer" aria-label="你的答案" maxlength="160" '+(s.ph?'placeholder="'+esc(s.ph)+'"':'')+' value="'+esc(q.answer||'')+'" '+(q.ok?'disabled':'')+'><button '+(q.ok?'disabled':'')+'>確認答案</button></form>';
  }
- if(s.t==='opt')html+='<div class="opts">'+optionOrder(r.attemptId,s.id,s.opts.length).map(k=>'<button data-opt="'+k+'" class="'+(q.answer===k?'sel':'')+'" '+(q.ok?'disabled':'')+'>'+esc(s.opts[k])+'</button>').join('')+'</div><p class="meta">點選選項即提交答案。每次作答的選項順序不同。</p>';
+ if(s.t==='opt')html+='<div class="opts">'+optionOrder(r.attemptId,s.id,s.opts.length).map(k=>'<button data-opt="'+k+'" class="'+(q.answer===k?'sel':'')+'" '+(q.ok?'disabled':'')+'>'+esc(s.opts[k])+'</button>').join('')+'</div><p class="meta">請先看清楚題目再作答：點選選項就會提交，每猜錯一次扣 1 分。每次作答的選項順序不同。</p>';
  if(s.t==='build'){
   const bits=q.answer||'0'.repeat(p.n);
   html+='<p class="ask">要表示 <b>'+p.value+'</b>，應選哪些位置？完成後按「確認答案」。</p><p class="meta">提醒：每個數字的二進位組合只有一種（唯一性）。從最大的位值開始想，就不會選錯。</p><div class="bits">'+[...bits].map((b,k)=>'<button data-bit="'+k+'" aria-pressed="'+(b==='1')+'" class="'+(b==='1'?'on':'')+'" '+(q.ok?'disabled':'')+'><b>'+b+'</b><small>'+2**(p.n-k-1)+'</small></button>').join('')+'</div><p class="tally">目前合計 '+parseInt(bits,2)+'</p><button id="confirm-build" class="plain" '+(q.ok?'disabled':'')+'>確認答案</button>';
@@ -102,7 +102,7 @@ function renderStudent(){
  if(s.t==='wave')html+='<p>灰色是原始聲音曲線，金色是電腦取樣後連起來的折線。</p><ol class="ladder"><li>把滑桿<b>拉到最左邊</b>（取樣最少，3～5 點），看金色折線和灰色曲線差多少。</li><li>再把滑桿<b>拉到最右邊</b>（取樣最多，60～64 點），再比較一次。</li><li>兩種都看過後，按「確認觀察完成」。</li></ol><canvas id="wave" width="900" height="250" aria-label="取樣曲線比較"></canvas><label for="sample">取樣點數：<b id="sample-value">'+(q.answer||16)+'</b></label><input id="sample" type="range" min="3" max="64" value="'+(q.answer||16)+'" '+(q.ok?'disabled':'')+'><p>最少取樣 '+(q.low?'✔ 已觀察':'✘ 還沒拉到最左邊')+' · 最多取樣 '+(q.high?'✔ 已觀察':'✘ 還沒拉到最右邊')+'</p><button id="confirm-wave" class="plain" '+(q.ok?'disabled':'')+'>確認觀察完成</button>';
  if(isAction(s)&&s.t!=='trick'){
   if(q.ok)html+='<p class="fb yes">完成！'+esc(fill(s.ok,p)||'結果正確。')+'</p>';
-  else if(q.submissions)html+='<p class="fb no">還沒完成，對照題目再試一次。訂正不扣分。</p>';
+  else if(q.submissions)html+='<p class="fb no">'+(s.t==='opt'?'還沒答對。選擇題每次猜錯都扣 1 分；本題目前已扣 '+(q.wrongSubmissions||0)+' 分。請看清楚題目再試。':'還沒完成，對照題目再試一次。這類題目訂正不扣分。')+'</p>';
   let hints=s.hints||[];
   if(s.t==='conv')hints=['只加寫著 1（在）的格子下面的小數字；寫著 0（不在）的跳過。','由右往左的位置值是 1、2、4、8、16、32、64、128。'];
   if(s.t==='build')hints=['從最大的位值開始，放得下就選，剩下的數再往下分。','也可以一直除以 2，將餘數由下往上讀。'];

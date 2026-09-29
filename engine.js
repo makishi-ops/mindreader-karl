@@ -73,11 +73,16 @@ export const courseScore = r => {
     const activitiesDone = count(STEPS.filter(scoredActivity));
     const done = STEPS.filter((s,k) => actionTypes.has(s.t) ? r.q[s.id]?.ok : k < r.maxStep || (r.completed && k === STEPS.length-1)).length;
     const values = Object.values(r.q);
+    // Every accepted wrong multiple-choice submission costs 1 point. Event IDs keep retries idempotent.
+    const choicePenalty = STEPS.filter(s => s.t === 'opt').reduce((n, s) => {
+        const wrong = r.q[s.id]?.wrongSubmissions;
+        return n + (Number.isSafeInteger(wrong) && wrong > 0 ? wrong : 0);
+    }, 0);
     // A completed item loses 1 point only when every hint for it was opened.
     const hintPenalty = [...concept, ...builds].filter(s => r.q[s.id]?.ok && hintLimit(s) > 0 && r.q[s.id].hints >= hintLimit(s)).length;
     const timeMs = STEPS.filter(timed).reduce((n, s) => n + (r.q[s.id]?.activeMs || 0), 0);
-    return {score:Math.max(0,Math.round((70*concepts/18+3*binary+5*activitiesDone-hintPenalty)*10)/10),
-        concepts,binary,activities:activitiesDone,hintPenalty,timeMs,done,totalSteps:STEPS.length,
+    return {score:Math.max(0,Math.round((70*concepts/18+3*binary+5*activitiesDone-choicePenalty-hintPenalty)*10)/10),
+        concepts,binary,activities:activitiesDone,choicePenalty,hintPenalty,timeMs,done,totalSteps:STEPS.length,
         progress:Math.round(done/STEPS.length*100),reached:r.maxStep+1,
         corrected:values.filter(q=>q.ok && q.wrongSubmissions>0).length,
         submissions:values.reduce((n,q)=>n+q.submissions,0),hints:values.reduce((n,q)=>n+q.hints,0),
@@ -89,7 +94,7 @@ const feedback = r => {
     const m=courseScore(r), pending=STEPS.find(s=>actionTypes.has(s.t)&&!r.q[s.id]?.ok);
     return {strength:`你已完成 ${m.concepts}／18 題概念與數值題、${m.binary}／5 題位元組合及 ${m.activities}／3 項操作活動。`,
         advice:pending?`下一步：回到「${pending.h||'五張卡讀心'}」，對照題目和提示再試一次。`:'所有評量項目已完成。可以向同學說明你如何利用位置值換算。',
-        comment:(m.corrected?`有 ${m.corrected} 題在錯誤提交後訂正完成；訂正不扣分。`:'此分數呈現活動完成成果，不以操作次數或停留時間推論學習態度。')+(m.hintPenalty?`有 ${m.hintPenalty} 題把提示全部用完，各扣 1 分。`:'')};
+        comment:(m.corrected?`有 ${m.corrected} 題在錯誤提交後訂正完成。`:'此分數呈現活動完成成果，不以操作次數或停留時間推論學習態度。')+(m.choicePenalty?`選擇題共錯答 ${m.choicePenalty} 次，每次扣 1 分；其他題目訂正不扣分。`:'選擇題沒有錯答；其他題目訂正不扣分。')+(m.hintPenalty?`有 ${m.hintPenalty} 題把提示全部用完，各扣 1 分。`:'')};
 };
 
 // localStorage can be missing or blocked (private windows, strict settings); fall back to this page only.
