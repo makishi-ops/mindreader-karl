@@ -46,17 +46,18 @@ const allowedValue = (s, v, r) => {
 };
 const correct = (s, v, q, r) => {
     const p = problems(r.attemptId)[s.id];
-    if (s.t === 'opt') return v === s.right;
-    if (s.t === 'conv') return /^\d+$/.test(v.trim()) && Number(v) === p.value;
-    if (s.t === 'build') return v === p.bits;
-    if (s.t === 'pixel') return v === HEART.join('');
+    const input = typeof v === 'string' ? v.normalize('NFKC') : v;
+    if (s.t === 'opt') return input === s.right;
+    if (s.t === 'conv') return /^\d+$/.test(input.trim()) && Number(input) === p.value;
+    if (s.t === 'build') return input === p.bits;
+    if (s.t === 'pixel') return input === HEART.join('');
     if (s.t === 'wave') return !!(q.low && q.high);
-    if (s.t === 'trick') return v.length === 5;
+    if (s.t === 'trick') return input.length === 5;
     // Accept commas, spaces or the Chinese separators; a run-on 124816 counts too, so formatting alone is never wrong.
-    if (s.id === 'q1') return ['1,2,4,8,16', '0,1,2,4,8,16'].includes(v.trim().split(/[\s,，、;；]+/u).join(',')) || /^0?124816$/u.test(v.replace(/\s+/gu, ''));
-    if (s.id === 'd2') return v.replace(/\s/g,'') === p.bits;
-    if (s.id === 'd3') return v.trim() === p.word;
-    return s.chk(v);
+    if (s.id === 'q1') return ['1,2,4,8,16', '0,1,2,4,8,16'].includes(input.trim().split(/[\s,，、;；]+/u).join(',')) || /^0?124816$/u.test(input.replace(/\s+/gu, ''));
+    if (s.id === 'd2') return input.replace(/\s/g,'') === p.bits;
+    if (s.id === 'd3') return input.trim() === p.word;
+    return s.chk(input);
 };
 // Add the time spent on the current timed question since the previous action.
 const tick = (r, time) => {
